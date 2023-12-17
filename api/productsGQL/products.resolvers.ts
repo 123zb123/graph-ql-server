@@ -14,7 +14,7 @@ export const productsResolvers = {
           return JSON.parse(rawData as any);
         }));
         
-        if (data.length > 0) {        
+        if (data.length > 30) {        
             console.log('data');
             
           const result = {

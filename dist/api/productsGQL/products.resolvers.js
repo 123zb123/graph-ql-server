@@ -46,7 +46,7 @@ exports.productsResolvers = {
                     const rawData = yield connectionRedis_1.client.json.get(key);
                     return JSON.parse(rawData);
                 })));
-                if (data.length > 0) {
+                if (data.length > 30) {
                     console.log('data');
                     const result = {
                         status: 200,
