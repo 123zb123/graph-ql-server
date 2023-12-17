@@ -15,6 +15,7 @@ import { productsResolvers } from './api/productsGQL/products.resolvers';
 
 import usersTypes from './api/usersGQL/usersTypes';
 import { usersResolvers } from './api/usersGQL/users.reslovers';
+import { client } from './utils/connectionRedis';
 
 export const app = express();
 
@@ -31,6 +32,7 @@ app.use(express.json({ limit: '50mb' }));
         resolvers: merge(usersResolvers, productsResolvers)
     });
     await connectToDatabase()
+    await client.connect()
 
     const { url } = await startStandaloneServer(server, {
         listen: { port: 4000 },

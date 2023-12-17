@@ -1,7 +1,7 @@
 import express from "express";
 import chalk from "chalk";
 const app = express();
-import { client } from "./client";
+import { client } from "../utils/connectionRedis";
 import { saveCredentials, getCredentials, saveArrayCredentials, getArrayCredentials, saveJSONToRedis, getJSONfromRedis, getFieldJSONfromRedis, storeOrUpdateObjects, getEntitiesByEntityType, getEntitiesByUserName, getEntitiesByTypeAndUserName } from "./setGetFunctions";
 import dotenv from "dotenv";
 dotenv.config();

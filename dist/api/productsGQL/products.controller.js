@@ -79,7 +79,8 @@ const updateInventoryItem = (productId, product) => __awaiter(void 0, void 0, vo
         if (updatedInventoryItem) {
             return {
                 status: 200,
-                message: 'The product was updated successfully'
+                message: 'The product was updated successfully',
+                product: updatedInventoryItem
             };
         }
         else {

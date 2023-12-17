@@ -49,7 +49,7 @@ export const addNewInventoryItem = async (newInventoryItemData: AdminProductInte
         const createdInventoryItem = await productService.addNewInventoryItem(newInventoryItemData);
         return {
             status: 201,
-            product: createdInventoryItem,
+            product: createdInventoryItem as AdminProductInterface,
             message: 'Successfully added!'
         }
 
@@ -68,7 +68,8 @@ export const updateInventoryItem = async (productId: string, product: AdminProdu
         if (updatedInventoryItem) {
             return {
                 status: 200,
-                message: 'The product was updated successfully'
+                message: 'The product was updated successfully',
+                product: updatedInventoryItem as AdminProductInterface
             }
         } else {
             return {
