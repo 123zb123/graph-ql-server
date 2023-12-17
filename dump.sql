@@ -5,8 +5,6 @@ CREATE TABLE admin_users (
     password VARCHAR(60) NOT NULL  
 );
 
-
-
 CREATE TABLE inventory_products (
     product_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
