@@ -14,13 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEntitiesByTypeAndUserName = exports.getEntitiesByEntityType = exports.getEntitiesByUserName = exports.storeOrUpdateObjects = exports.getFieldJSONfromRedis = exports.getJSONfromRedis = exports.saveJSONToRedis = exports.getArrayCredentials = exports.saveArrayCredentials = exports.getCredentials = exports.saveCredentials = void 0;
 const chalk_1 = __importDefault(require("chalk"));
-const client_1 = require("./client");
+const connectionRedis_1 = require("../utils/connectionRedis");
 // 1. set credentials
 function saveCredentials(username, password) {
     return __awaiter(this, void 0, void 0, function* () {
         const key = `password:${username}`;
         try {
-            yield client_1.client.set(key, password);
+            yield connectionRedis_1.client.set(key, password);
             console.log(chalk_1.default.greenBright(`Credentials for ${username} saved successfully!`));
             return 'the password was saved successfully';
         }
@@ -35,7 +35,7 @@ function getCredentials(username) {
     return __awaiter(this, void 0, void 0, function* () {
         const key = `password:${username}`;
         try {
-            const password = yield client_1.client.get(key);
+            const password = yield connectionRedis_1.client.get(key);
             return `the password was get successfully, ${password}`;
         }
         catch (error) {
@@ -48,7 +48,7 @@ exports.getCredentials = getCredentials;
 function saveArrayCredentials(credentialsArray) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const multi = client_1.client.multi();
+            const multi = connectionRedis_1.client.multi();
             credentialsArray.forEach(([username, password]) => {
                 multi.set(`password:${username}`, password);
             });
@@ -64,7 +64,7 @@ exports.saveArrayCredentials = saveArrayCredentials;
 function getArrayCredentials(usernames) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const multi = client_1.client.multi();
+            const multi = connectionRedis_1.client.multi();
             usernames.forEach((username) => {
                 multi.get(`password:${username}`);
             });
@@ -80,7 +80,7 @@ exports.getArrayCredentials = getArrayCredentials;
 function saveJSONToRedis(key, jsonValue) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(jsonValue);
-        const data = yield client_1.client.json.set(key, '.', jsonValue);
+        const data = yield connectionRedis_1.client.json.set(key, '.', jsonValue);
         return data;
     });
 }
@@ -88,7 +88,7 @@ exports.saveJSONToRedis = saveJSONToRedis;
 // 6. get JSON from Redis
 function getJSONfromRedis() {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = yield client_1.client.json.get('myobj');
+        const data = yield connectionRedis_1.client.json.get('myobj');
         return data;
     });
 }
@@ -96,7 +96,7 @@ exports.getJSONfromRedis = getJSONfromRedis;
 // 7. get feild from json
 function getFieldJSONfromRedis() {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = yield client_1.client.json.get('myobj', { path: '.key1', });
+        const data = yield connectionRedis_1.client.json.get('myobj', { path: '.key1', });
         return data;
     });
 }
@@ -105,15 +105,15 @@ exports.getFieldJSONfromRedis = getFieldJSONfromRedis;
 function saveOrUpdateToRedis(obj, ttlInSeconds) {
     return __awaiter(this, void 0, void 0, function* () {
         const key = `${obj.metadata.uuid}:${obj.creator}:${obj.entity_type}`;
-        const existingData = yield client_1.client.json.get(key);
+        const existingData = yield connectionRedis_1.client.json.get(key);
         if (existingData) {
             const updatedData = Object.assign(Object.assign({}, existingData), obj);
-            yield client_1.client.json.set(key, '.', updatedData);
-            yield client_1.client.expire(key, 120);
+            yield connectionRedis_1.client.json.set(key, '.', updatedData);
+            yield connectionRedis_1.client.expire(key, 120);
         }
         else {
-            yield client_1.client.json.set(key, '.', obj);
-            yield client_1.client.expire(key, ttlInSeconds);
+            yield connectionRedis_1.client.json.set(key, '.', obj);
+            yield connectionRedis_1.client.expire(key, ttlInSeconds);
         }
     });
 }
@@ -130,10 +130,10 @@ exports.storeOrUpdateObjects = storeOrUpdateObjects;
 function getEntitiesByUserName(userName) {
     return __awaiter(this, void 0, void 0, function* () {
         const pattern = `*:${userName}:*`;
-        const keys = yield client_1.client.keys(pattern);
+        const keys = yield connectionRedis_1.client.keys(pattern);
         const entities = yield Promise.all(keys.map(key => {
-            client_1.client.json.get(key);
-            client_1.client.expire(key, 120);
+            connectionRedis_1.client.json.get(key);
+            connectionRedis_1.client.expire(key, 120);
         }));
         return entities;
     });
@@ -142,10 +142,10 @@ exports.getEntitiesByUserName = getEntitiesByUserName;
 function getEntitiesByEntityType(entityType) {
     return __awaiter(this, void 0, void 0, function* () {
         const pattern = `*:*:${entityType}`;
-        const keys = yield client_1.client.keys(pattern);
+        const keys = yield connectionRedis_1.client.keys(pattern);
         const entities = yield Promise.all(keys.map(key => {
-            client_1.client.json.get(key);
-            client_1.client.expire(key, 120);
+            connectionRedis_1.client.json.get(key);
+            connectionRedis_1.client.expire(key, 120);
         }));
         return entities;
     });
@@ -154,10 +154,10 @@ exports.getEntitiesByEntityType = getEntitiesByEntityType;
 function getEntitiesByTypeAndUserName(entityType, userName) {
     return __awaiter(this, void 0, void 0, function* () {
         const pattern = `*:${userName}:${entityType}`;
-        const keys = yield client_1.client.keys(pattern);
+        const keys = yield connectionRedis_1.client.keys(pattern);
         const entities = yield Promise.all(keys.map(key => {
-            client_1.client.json.get(key);
-            client_1.client.expire(key, 120);
+            connectionRedis_1.client.json.get(key);
+            connectionRedis_1.client.expire(key, 120);
         }));
         return entities;
     });

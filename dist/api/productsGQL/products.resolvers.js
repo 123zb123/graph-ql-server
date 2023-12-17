@@ -33,12 +33,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.productsResolvers = void 0;
+const connectionRedis_1 = require("../../utils/connectionRedis");
+const fetchRedis_1 = require("../fetchRedis");
 const productsController = __importStar(require("../productsGQL/products.controller"));
 exports.productsResolvers = {
     Query: {
         getProducts: () => __awaiter(void 0, void 0, void 0, function* () {
             try {
+                const pattern = 'products:*';
+                const keys = yield connectionRedis_1.client.keys(pattern);
+                const data = yield Promise.all(keys.map((key) => __awaiter(void 0, void 0, void 0, function* () {
+                    const rawData = yield connectionRedis_1.client.json.get(key);
+                    return JSON.parse(rawData);
+                })));
+                if (data.length > 0) {
+                    console.log('data');
+                    const result = {
+                        status: 200,
+                        products: data,
+                        message: 'products fetched successfully'
+                    };
+                    return result;
+                }
                 const result = yield productsController.getAllInventory();
+                const products = result.products;
+                products.forEach((product) => __awaiter(void 0, void 0, void 0, function* () {
+                    yield connectionRedis_1.client.json.set(`products:${product.product_id}`, '.', JSON.stringify(product));
+                    yield connectionRedis_1.client.expire(`products:${product.product_id}`, 300);
+                }));
                 return result;
             }
             catch (error) {
@@ -48,6 +70,15 @@ exports.productsResolvers = {
         }),
         getProductById: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () {
             try {
+                const data = yield (0, fetchRedis_1.redisCash)(`products:${id}`);
+                if (data) {
+                    const result = {
+                        product: JSON.parse(data),
+                        status: 200,
+                        message: 'data fetched successfully from redis!'
+                    };
+                    return result;
+                }
                 const result = yield productsController.getInventoryById(id);
                 return result;
             }
@@ -59,8 +90,13 @@ exports.productsResolvers = {
     },
     Mutation: {
         addProduct: (_, { product }) => __awaiter(void 0, void 0, void 0, function* () {
+            var _a, _b;
             try {
                 const result = yield productsController.addNewInventoryItem(product);
+                console.log(result);
+                if (result.status == 201) {
+                    yield connectionRedis_1.client.json.set(`products:${(_b = ((_a = result.product) === null || _a === void 0 ? void 0 : _a.product_id)) === null || _b === void 0 ? void 0 : _b.toString()}`, '.', JSON.stringify(result.product));
+                }
                 return result;
             }
             catch (error) {
@@ -68,8 +104,12 @@ exports.productsResolvers = {
             }
         }),
         updateProduct: (_, { id, product }) => __awaiter(void 0, void 0, void 0, function* () {
+            var _c;
             try {
                 const result = yield productsController.updateInventoryItem(id, product);
+                if (result.status == 200) {
+                    yield connectionRedis_1.client.json.set(`products:${(_c = result.product) === null || _c === void 0 ? void 0 : _c.product_id}`, '.', JSON.stringify(result.product));
+                }
                 return result;
             }
             catch (error) {
@@ -79,6 +119,10 @@ exports.productsResolvers = {
         deleteProduct: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const result = yield productsController.deleteInventoryItem(id);
+                if (result.status == 200) {
+                    yield connectionRedis_1.client.json.del(`products:${id}`);
+                    console.log('deleted successfully');
+                }
                 return result;
             }
             catch (error) {

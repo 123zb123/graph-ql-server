@@ -6,7 +6,6 @@ const connectToDatabaseString : string | undefined= process.env.CONNECTION_STRIN
 
 export const sequelize = new Sequelize( connectToDatabaseString! ,{
 
-
     pool: {
         max: 1500,
         min: 0,
@@ -15,7 +14,6 @@ export const sequelize = new Sequelize( connectToDatabaseString! ,{
       }
     }
 ) 
-
 
 export async function connectToDatabase() {
     try {

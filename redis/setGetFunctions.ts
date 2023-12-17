@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { client } from "./client";
+import { client } from "../utils/connectionRedis";
 import { EntitiesArray } from './types'
 
 // 1. set credentials

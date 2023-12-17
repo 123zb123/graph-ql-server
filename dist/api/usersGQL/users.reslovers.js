@@ -33,21 +33,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usersResolvers = void 0;
+const connectionRedis_1 = require("../../utils/connectionRedis");
+const fetchRedis_1 = require("../fetchRedis");
 const usersController = __importStar(require("./users.controller"));
 exports.usersResolvers = {
     Query: {},
     Mutation: {
         loginUser: (_, { user }) => __awaiter(void 0, void 0, void 0, function* () {
+            const key = `${user.username}:${user.password}`;
+            const data = yield (0, fetchRedis_1.redisCash)(key);
+            const da = JSON.parse(data);
+            console.log(da);
+            if (da)
+                return da;
             const result = yield usersController.loginUser(user);
+            if (result.status == 200)
+                yield connectionRedis_1.client.json.set(key, '.', JSON.stringify(result));
             return result;
         }),
         register: (_, { user }) => __awaiter(void 0, void 0, void 0, function* () {
             try {
+                const key = `${user.username}:${user.password}`;
                 const result = yield usersController.registerUser(user);
                 if (result.status !== 201) {
                     throw new Error(result.message);
                 }
-                console.log(result);
+                yield connectionRedis_1.client.json.set(key, '.', JSON.stringify(result));
                 return result;
             }
             catch (error) {

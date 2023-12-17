@@ -26,6 +26,7 @@ const productsTypes_1 = __importDefault(require("./api/productsGQL/productsTypes
 const products_resolvers_1 = require("./api/productsGQL/products.resolvers");
 const usersTypes_1 = __importDefault(require("./api/usersGQL/usersTypes"));
 const users_reslovers_1 = require("./api/usersGQL/users.reslovers");
+const connectionRedis_1 = require("./utils/connectionRedis");
 exports.app = (0, express_1.default)();
 exports.app.use((0, cors_1.default)({ origin: '*' }));
 exports.app.use((0, morgan_1.default)('dev'));
@@ -36,6 +37,7 @@ exports.app.use(express_1.default.json({ limit: '50mb' }));
         resolvers: (0, lodash_1.merge)(users_reslovers_1.usersResolvers, products_resolvers_1.productsResolvers)
     });
     yield (0, connections_db_1.connectToDatabase)();
+    yield connectionRedis_1.client.connect();
     const { url } = yield (0, standalone_1.startStandaloneServer)(server, {
         listen: { port: 4000 },
     });

@@ -42,40 +42,38 @@ function selectProductByIdQuery(id) {
 }
 exports.selectProductByIdQuery = selectProductByIdQuery;
 function insertProductQuery(product) {
-    console.log(product);
     const insertProduct = `
-      INSERT INTO "inventory_products" (
-        "is_for_sale",
-        "cost_price",
-        "supplier",
-        "name",
-        "sale_price",
-        "quantity",
-        "description",
-        "category",
-        "discount_percentage",
-        "image_url",
-        "image_alt"
-      ) VALUES (
-        ${product.is_for_sale},
-        ${product.cost_price},
-        '${product.supplier}',
-        '${product.name}',
-        ${product.sale_price},
-        ${product.quantity},
-        '${product.description}',
-        '${product.category}',
-        ${product.discount_percentage},
-        '${product.image_url}',
-        '${product.image_alt}'
-      ) RETURNING "product_id";
-    `;
+  INSERT INTO "inventory_products" (
+    "is_for_sale",
+    "cost_price",
+    "supplier",
+    "name",
+    "sale_price",
+    "quantity",
+    "description",
+    "category",
+    "discount_percentage",
+    "image_url",
+    "image_alt"
+  ) VALUES (
+    ${product.is_for_sale},
+    ${product.cost_price},
+    '${product.supplier}',
+    '${product.name}',
+    ${product.sale_price},
+    ${product.quantity},
+    '${product.description}',
+    '${product.category}',
+    ${product.discount_percentage},
+    '${product.image_url}',
+    '${product.image_alt}'
+  ) RETURNING *; 
+`;
     return insertProduct;
 }
 exports.insertProductQuery = insertProductQuery;
 function updateProductQuery(id, product) {
     const updateFields = [];
-    console.log(product);
     if (product.is_for_sale !== undefined)
         updateFields.push(`"is_for_sale" = ${product.is_for_sale}`);
     if (product.cost_price !== undefined)
@@ -103,7 +101,7 @@ function updateProductQuery(id, product) {
       SET
         ${updateFields.join(',\n')}
       WHERE "product_id" = ${id}
-      RETURNING "product_id";
+      RETURNING *; 
     `;
     return updateProduct;
 }

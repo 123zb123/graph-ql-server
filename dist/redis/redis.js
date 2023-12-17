@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const chalk_1 = __importDefault(require("chalk"));
 const app = (0, express_1.default)();
-const client_1 = require("./client");
+const connectionRedis_1 = require("../utils/connectionRedis");
 const setGetFunctions_1 = require("./setGetFunctions");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -25,10 +25,10 @@ app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { test } = req.query;
         if (test) {
-            yield client_1.client.get("test");
-            yield client_1.client.set("test", String(test));
+            yield connectionRedis_1.client.get("test");
+            yield connectionRedis_1.client.set("test", String(test));
         }
-        const data = yield client_1.client.get("test");
+        const data = yield connectionRedis_1.client.get("test");
         res.send(data);
     }
     catch (error) {
@@ -193,7 +193,7 @@ app.post("/getEntitiesByEntityTypeAndName", (req, res) => __awaiter(void 0, void
 }));
 app.listen(port, () => {
     console.log(chalk_1.default.blueBright(`listening on: ${8200}`));
-    client_1.client.connect()
+    connectionRedis_1.client.connect()
         .then(() => console.log(chalk_1.default.magentaBright(`connected successfully to Redis client!!! 🆒 😎`)))
         .catch((error) => {
         if (error instanceof Error) {
