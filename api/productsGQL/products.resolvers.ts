@@ -14,14 +14,14 @@ export const productsResolvers = {
           return JSON.parse(rawData as any);
         }));
         
-        if (data.length > 0) {        
-            console.log('data');
-            
+        if (data.length > 30) { 
+
           const result = {
             status: 200,
             products: data,
             message: 'products fetched successfully'
-          }                              
+          }           
+                             
           return result;
         }
         const result = await productsController.getAllInventory();
