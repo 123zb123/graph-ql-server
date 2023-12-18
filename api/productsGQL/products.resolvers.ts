@@ -11,7 +11,7 @@ export const productsResolvers = {
         const keys = await client.keys(pattern);
         const data = await Promise.all(keys.map(async (key) => {
           const rawData = await client.json.get(key);
-          return JSON.parse(rawData as any);
+          return JSON.parse(String(rawData));
         }));
         
         if (data.length > 30) { 
@@ -21,7 +21,7 @@ export const productsResolvers = {
             products: data,
             message: 'products fetched successfully'
           }           
-                             
+
           return result;
         }
         const result = await productsController.getAllInventory();
