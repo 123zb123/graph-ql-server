@@ -9,18 +9,19 @@ export const productsResolvers = {
       try {
         const pattern = 'products:*'
         const keys = await client.keys(pattern);
-        const data = await Promise.all(keys.map(async (key) => {
+        const data: AdminProductInterface[] = await Promise.all(keys.map(async (key) => {
           const rawData = await client.json.get(key);
+          await client.expire(key, 300)
           return JSON.parse(String(rawData));
         }));
-        
-        if (data.length > 30) { 
+
+        if (data.length > 30) {
 
           const result = {
             status: 200,
             products: data,
             message: 'products fetched successfully'
-          }           
+          }
 
           return result;
         }
@@ -29,7 +30,7 @@ export const productsResolvers = {
         products.forEach(async (product) => {
           await client.json.set(`products:${product.product_id}`, '.', JSON.stringify(product))
           await client.expire(`products:${product.product_id}`, 300);
-        })        
+        })
         return result;
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -37,10 +38,11 @@ export const productsResolvers = {
       }
     },
 
-    getProductById: async (_: any, { id }: { id: string }) => {
+    getProductById: async (_: any, { id }: { id: string }, {token} : {token: string}) => {
+      console.log(token);
+      
       try {
         const data = await redisCash(`products:${id}`)
-
         if (data) {
           const result = {
             product: JSON.parse(data as any),
@@ -61,10 +63,10 @@ export const productsResolvers = {
   Mutation: {
 
     addProduct: async (_: any, { product }: { product: AdminProductInterface }) => {
-      try {        
+      try {
         const result = await productsController.addNewInventoryItem(product);
         console.log(result);
-        
+
         if (result.status == 201) {
           await client.json.set(`products:${(result.product?.product_id)?.toString()}`, '.', JSON.stringify(result.product))
         }
@@ -77,9 +79,9 @@ export const productsResolvers = {
     updateProduct: async (_: any, { id, product }: { id: string, product: AdminProductInterface }) => {
       try {
         const result = await productsController.updateInventoryItem(id, product);
-        
+
         if (result.status == 200) {
-          await client.json.set(`products:${result.product?.product_id}`,'.', JSON.stringify(result.product))
+          await client.json.set(`products:${result.product?.product_id}`, '.', JSON.stringify(result.product))
         }
         return result
       } catch (error) {
@@ -93,7 +95,7 @@ export const productsResolvers = {
         if (result.status == 200) {
           await client.json.del(`products:${id}`);
           console.log('deleted successfully');
-          
+
         }
         return result;
       } catch (error) {
