@@ -44,7 +44,7 @@ exports.productsResolvers = {
                 const keys = yield connectionRedis_1.client.keys(pattern);
                 const data = yield Promise.all(keys.map((key) => __awaiter(void 0, void 0, void 0, function* () {
                     const rawData = yield connectionRedis_1.client.json.get(key);
-                    return JSON.parse(rawData);
+                    return JSON.parse(String(rawData));
                 })));
                 if (data.length > 30) {
                     const result = {
