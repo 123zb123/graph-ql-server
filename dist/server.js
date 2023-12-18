@@ -13,8 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.app = void 0;
-const server_1 = require("@apollo/server");
-const standalone_1 = require("@apollo/server/standalone");
+const apollo_server_express_1 = require("apollo-server-express");
 const lodash_1 = require("lodash");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -32,14 +31,19 @@ exports.app.use((0, cors_1.default)({ origin: '*' }));
 exports.app.use((0, morgan_1.default)('dev'));
 exports.app.use(express_1.default.json({ limit: '50mb' }));
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const server = new server_1.ApolloServer({
+    const server = new apollo_server_express_1.ApolloServer({
         typeDefs: usersTypes_1.default + productsTypes_1.default,
-        resolvers: (0, lodash_1.merge)(users_reslovers_1.usersResolvers, products_resolvers_1.productsResolvers)
+        resolvers: (0, lodash_1.merge)(users_reslovers_1.usersResolvers, products_resolvers_1.productsResolvers),
+        context: ({ req }) => {
+            const token = req.headers.authorization || '';
+            return { token };
+        },
     });
+    yield server.start();
+    server.applyMiddleware({ app: exports.app, path: '/graphql' });
     yield (0, connections_db_1.connectToDatabase)();
     yield connectionRedis_1.client.connect();
-    const { url } = yield (0, standalone_1.startStandaloneServer)(server, {
-        listen: { port: 4000 },
+    exports.app.listen(process.env.PORT, () => {
+        console.log(`server started on port ${process.env.PORT}`);
     });
-    console.log(`🚀  Server ready at: ${url}`);
 }))();

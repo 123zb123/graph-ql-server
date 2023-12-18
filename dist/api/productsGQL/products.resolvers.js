@@ -44,6 +44,7 @@ exports.productsResolvers = {
                 const keys = yield connectionRedis_1.client.keys(pattern);
                 const data = yield Promise.all(keys.map((key) => __awaiter(void 0, void 0, void 0, function* () {
                     const rawData = yield connectionRedis_1.client.json.get(key);
+                    yield connectionRedis_1.client.expire(key, 300);
                     return JSON.parse(String(rawData));
                 })));
                 if (data.length > 30) {
@@ -67,7 +68,8 @@ exports.productsResolvers = {
                 throw error;
             }
         }),
-        getProductById: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () {
+        getProductById: (_, { id }, { token }) => __awaiter(void 0, void 0, void 0, function* () {
+            console.log(token);
             try {
                 const data = yield (0, fetchRedis_1.redisCash)(`products:${id}`);
                 if (data) {

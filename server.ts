@@ -1,4 +1,4 @@
-import { ApolloServer } from '@apollo/server';
+import { ApolloServer } from 'apollo-server-express';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { merge } from 'lodash'
 
@@ -29,14 +29,20 @@ app.use(express.json({ limit: '50mb' }));
 (async () => {
     const server = new ApolloServer({
         typeDefs: usersTypes + productsTypes,
-        resolvers: merge(usersResolvers, productsResolvers)
+        resolvers: merge(usersResolvers, productsResolvers),
+        context: ({ req }) => {
+            const token = req.headers.authorization || '';
+            return { token };
+        },
     });
+    await server.start();
+
+    server.applyMiddleware({ app, path: '/graphql' })
     await connectToDatabase()
     await client.connect()
 
-    const { url } = await startStandaloneServer(server, {
-        listen: { port: 4000 },
-    });
+    app.listen(process.env.PORT, () => {
+        console.log(`server started on port ${process.env.PORT}`);   
+    })
 
-    console.log(`🚀  Server ready at: ${url}`);
 })();
