@@ -22,7 +22,8 @@ input InputUser {
 }
 
 type Subscription {
-  user: User
+  userCreated: RegisterResult
+  userLogin: LoginResult
 }
 
 

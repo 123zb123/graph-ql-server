@@ -8,27 +8,41 @@ const pubsub = new PubSub();
 
 export const usersResolvers = {
   Subscription: {
-    user: {
+    userCreated: {
       subscribe: () => pubsub.asyncIterator(['USER_CREATED']),
     },
     userLogin: {
       subscribe: () => pubsub.asyncIterator(['USER_LOGIN']),
     },
   },
-  
+
   Query: {},
 
   Mutation: {
     loginUser: async (_: any, { user }: { user: User }) => {
+      console.log('1');
+
       const key = `${user.username}:${user.password}`;
       const data = await redisCash(key);
-      const da = JSON.parse(data as any);
-      console.log(da);
+      console.log(data);
 
-      if (da) return da;
+      const da = JSON.parse(data as any);
+
+      // if (da) return da;
+
       const result = await usersController.loginUser(user);
+
       if (result.status == 200) await client.json.set(key, '.', JSON.stringify(result));
-      pubsub.publish('USER_LOGIN', { userCreated: `result.status : ${result.status}, result : ${result}` });
+
+      pubsub.publish('USER_LOGIN',
+        {
+          userLogin:
+          {
+            status: result.status,
+            token: result.token,
+          }
+
+        });
 
       return result;
     },
@@ -50,5 +64,5 @@ export const usersResolvers = {
     },
   },
 
- 
+
 };

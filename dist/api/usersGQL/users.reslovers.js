@@ -40,7 +40,7 @@ const graphql_subscriptions_1 = require("graphql-subscriptions");
 const pubsub = new graphql_subscriptions_1.PubSub();
 exports.usersResolvers = {
     Subscription: {
-        user: {
+        userCreated: {
             subscribe: () => pubsub.asyncIterator(['USER_CREATED']),
         },
         userLogin: {
@@ -50,16 +50,21 @@ exports.usersResolvers = {
     Query: {},
     Mutation: {
         loginUser: (_, { user }) => __awaiter(void 0, void 0, void 0, function* () {
+            console.log('1');
             const key = `${user.username}:${user.password}`;
             const data = yield (0, fetchRedis_1.redisCash)(key);
+            console.log(data);
             const da = JSON.parse(data);
-            console.log(da);
-            if (da)
-                return da;
+            // if (da) return da;
             const result = yield usersController.loginUser(user);
             if (result.status == 200)
                 yield connectionRedis_1.client.json.set(key, '.', JSON.stringify(result));
-            pubsub.publish('USER_LOGIN', { userCreated: `result.status : ${result.status}, result : ${result}` });
+            pubsub.publish('USER_LOGIN', {
+                userLogin: {
+                    status: result.status,
+                    token: result.token,
+                }
+            });
             return result;
         }),
         register: (_, { user }) => __awaiter(void 0, void 0, void 0, function* () {
