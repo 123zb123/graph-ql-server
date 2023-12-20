@@ -34,7 +34,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usersResolvers = void 0;
 const connectionRedis_1 = require("../../utils/connectionRedis");
-const fetchRedis_1 = require("../fetchRedis");
 const usersController = __importStar(require("./users.controller"));
 const graphql_subscriptions_1 = require("graphql-subscriptions");
 const pubsub = new graphql_subscriptions_1.PubSub();
@@ -50,12 +49,11 @@ exports.usersResolvers = {
     Query: {},
     Mutation: {
         loginUser: (_, { user }) => __awaiter(void 0, void 0, void 0, function* () {
-            console.log('1');
             const key = `${user.username}:${user.password}`;
-            const data = yield (0, fetchRedis_1.redisCash)(key);
-            console.log(data);
+            const data = yield connectionRedis_1.client.json.get(key);
             const da = JSON.parse(data);
-            // if (da) return da;
+            if (da)
+                return da;
             const result = yield usersController.loginUser(user);
             if (result.status == 200)
                 yield connectionRedis_1.client.json.set(key, '.', JSON.stringify(result));
@@ -71,7 +69,12 @@ exports.usersResolvers = {
             try {
                 const key = `${user.username}:${user.password}`;
                 const result = yield usersController.registerUser(user);
-                pubsub.publish('USER_CREATED', { userCreated: `result.user : ${result.user}, result : ${result}` });
+                pubsub.publish('USER_CREATED', { userCreated: {
+                        status: result.status,
+                        message: result.message,
+                        user: result.user
+                    }
+                });
                 if (result.status !== 201) {
                     throw new Error(result.message);
                 }

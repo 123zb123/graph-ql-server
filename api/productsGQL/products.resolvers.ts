@@ -94,6 +94,7 @@ export const productsResolvers = {
         const result = await productsController.deleteInventoryItem(id);
         if (result.status == 200) {
           await client.json.del(`products:${id}`);
+          
           console.log('deleted successfully');
 
         }
