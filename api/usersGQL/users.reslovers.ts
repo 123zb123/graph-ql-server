@@ -20,15 +20,12 @@ export const usersResolvers = {
 
   Mutation: {
     loginUser: async (_: any, { user }: { user: User }) => {
-      console.log('1');
-
       const key = `${user.username}:${user.password}`;
-      const data = await redisCash(key);
-      console.log(data);
+      const data = await client.json.get(key);    
 
       const da = JSON.parse(data as any);
 
-      // if (da) return da;
+      if (da) return da;
 
       const result = await usersController.loginUser(user);
 
@@ -51,7 +48,14 @@ export const usersResolvers = {
       try {
         const key = `${user.username}:${user.password}`;
         const result = await usersController.registerUser(user);
-        pubsub.publish('USER_CREATED', { userCreated: `result.user : ${result.user}, result : ${result}` });
+        pubsub.publish('USER_CREATED', 
+        { userCreated:
+           {
+          status: result.status,
+          message: result.message,
+          user : result.user
+        }
+          });
 
         if (result.status !== 201) {
           throw new Error(result.message);
