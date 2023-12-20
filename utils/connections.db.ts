@@ -2,9 +2,10 @@ import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config()
 
-const connectToDatabaseString : string | undefined= process.env.CONNECTION_STRING_DB 
+const connectToDatabaseString : string | undefined = process.env.CONNECTION_STRING_DB 
 
-export const sequelize = new Sequelize( connectToDatabaseString! ,{
+
+export const sequelize = new Sequelize(connectToDatabaseString! ,{
 
     pool: {
         max: 1500,

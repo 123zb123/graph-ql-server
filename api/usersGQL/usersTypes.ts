@@ -20,22 +20,30 @@ input InputUser {
   username: String
   password: String
 }
-`;
 
-const typesQuery = `#graphql
+type Subscription {
+  user: User
+}
+
+
 
 type Query {
   getUser(id: ID!): User
 }
 
-
 type Mutation {
   register(user: InputUser): RegisterResult
   loginUser(user: InputUser): LoginResult
 }
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
 `;
 
-const usersTypes = typeDefs + typesQuery;
+const usersTypes = typeDefs ;
 
 export default usersTypes;
 
